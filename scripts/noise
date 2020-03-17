@@ -1,0 +1,68 @@
+#!/opt/local/bin/python2.7
+# encoding: utf-8
+
+
+# this script calculates and plots the standard deviation and absolute
+# values of min and max Ex. This is an estimation of whether a
+# numerical instability is occuring or not in the simulation
+
+
+import picgsfc as pr
+import colorp as cp
+import matplotlib.pyplot as plt
+import numpy as np
+import math
+import sys
+import os
+
+def main():
+
+    run = pr.PICGSFCrun('r',sys.argv[1])
+
+    tstart = float(sys.argv[2])
+    tend   = float(sys.argv[3])
+
+    print tstart, tend
+
+    files = run.GetFieldFiles(tstart,tend)
+    nt    = len(files)
+
+    noise = np.zeros(nt)
+    t     = np.zeros(nt)
+    minE  = np.zeros(nt)
+    maxE  = np.zeros(nt)
+
+    for i, f in enumerate(files):
+        time = run.GetFileTime(f)
+        E    = run.GetE(time)
+        noise[i] = np.std(E[0,1:,1:])
+        t[i] = time
+        minE[i] = np.min(E[0,1:,1:])
+        maxE[i] = np.max(E[0,1:,1:])
+
+
+    fig = plt.figure()
+    ax  = fig.add_subplot(211)
+
+    ax.set_title('noise evolution')
+    ax.set_xlabel(r'$t/\Omega_{ci}$')
+    ax.set_ylabel(r'$\sigma_{E_x}$')
+
+    ax2 = fig.add_subplot(212)
+    ax2.set_title('amplitude of the noise')
+    ax2.set_xlabel(r'$t/\Omega_{ci}$')
+    ax2.set_ylabel(r'$minmax(E_x)$')
+
+    ax.plot(t,noise)
+    ax2.plot(t,np.abs(minE),color='r',label=r'$|min(E_x)|$')
+    ax2.plot(t,np.abs(maxE),color='g', label=r'$|max(E_x)|$')
+
+    ax2.legend()
+
+    filesave = os.path.join(sys.argv[1],'noise.png')
+
+    fig.savefig(filesave)
+
+if __name__ == '__main__':
+    main()
+

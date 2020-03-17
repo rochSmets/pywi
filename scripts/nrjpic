@@ -1,0 +1,132 @@
+#!/opt/local/bin/python2.7
+# encoding: utf-8
+
+
+# this script calculates the energy within the simulation
+
+
+import picgsfc as pr
+import colorp as cp
+import matplotlib.pyplot as plt
+import numpy as np
+import math
+import sys
+import os
+
+def main():
+
+    run = pr.PICGSFCrun('r',sys.argv[1])
+
+    tstart = float(sys.argv[2])
+    tend   = float(sys.argv[3])
+
+    print tstart, tend
+
+    files = run.GetFieldFiles(tstart,tend)
+    nt    = len(files)
+
+    nrjB     = np.zeros(nt)
+    t        = np.zeros(nt)
+    nrjE     = np.zeros(nt)
+    kin_e    = np.zeros(nt)
+    kin_i    = np.zeros(nt)
+    therm_i  = np.zeros(nt)
+    therm_e  = np.zeros(nt)
+
+    me       = run.GetMass('electrons')
+    mi       = run.GetMass('ions')
+
+    for i, f in enumerate(files):
+        time  = run.GetFileTime(f)
+        E     = run.GetE(time)
+        B     = run.GetB(time)
+        Pe    = run.GetPe(time)
+        Pi    = run.GetPi(time)
+        Vi    = run.GetVi(time)
+        Ve    = run.GetVe(time)
+        Ne    = run.GetNe(time)
+        Ni    = run.GetNi(time)
+
+        nrjB_i   = 0.5*(B[0,:,:]**2 + B[1,:,:]**2 + B[2,:,:]**2)
+        nrjE_i   = 0.5*(E[0,:,:]**2 + E[1,:,:]**2 + E[2,:,:]**2)
+        kine_i   = 0.5*me*Ne*(Ve[0,:,:]**2 + Ve[1,:,:]**2 + Ve[2,:,:]**2)
+        kini_i   = 0.5*mi*Ni*(Vi[0,:,:]**2 + Vi[1,:,:]**2 + Vi[2,:,:]**2)
+        thermi_i = 0.5*(Pi[0,0,:,:] + Pi[1,1,:,:] + Pi[2,2,:,:])
+        therme_i = 0.5*(Pe[0,0,:,:] + Pe[1,1,:,:] + Pe[2,2,:,:])
+
+        t[i]       = time
+        nrjB[i]    = np.mean(nrjB_i)
+        nrjE[i]    = np.mean(nrjE_i)
+        kin_e[i]   = np.mean(kine_i)
+        kin_i[i]   = np.mean(kini_i)
+        therm_e[i] = np.mean(thermi_i)
+        therm_i[i] = np.mean(therme_i)
+
+    fig = plt.figure()
+    ax  = fig.add_subplot(211)
+
+    ax.set_title('energy evolution')
+    ax.set_xlabel(r'$t/\Omega_{ci}$')
+
+    ax.plot(t, nrjB + nrjE + kin_e + kin_i + therm_e + therm_i)
+    filesave = os.path.join(sys.argv[1],'nrj_tot.png')
+
+    fig.savefig(filesave)
+
+
+    fig = plt.figure()
+    ax  = fig.add_subplot(211)
+
+    ax.set_title('magnetic energy evolution')
+    ax.set_xlabel(r'$t/\Omega_{ci}$')
+
+    ax.plot(t, nrjB)
+    filesave = os.path.join(sys.argv[1],'nrj_B.png')
+
+    fig.savefig(filesave)
+
+
+    fig = plt.figure()
+    ax  = fig.add_subplot(211)
+
+    ax.set_title('electric energy evolution')
+    ax.set_xlabel(r'$t/\Omega_{ci}$')
+
+    ax.plot(t, nrjE)
+    filesave = os.path.join(sys.argv[1],'nrj_E.png')
+
+    fig.savefig(filesave)
+
+
+    fig = plt.figure()
+    ax  = fig.add_subplot(211)
+
+    ax.set_title('Kinetic energy evolution')
+    ax.set_xlabel(r'$t/\Omega_{ci}$')
+
+    ax.plot(t, kin_i, label=r'$K_i$')
+    ax.plot(t, kin_e, label=r'$K_e$')
+    filesave = os.path.join(sys.argv[1],'nrj_kin.png')
+
+
+    fig = plt.figure()
+    ax  = fig.add_subplot(211)
+
+    ax.set_title('Thermal energy evolution')
+    ax.set_xlabel(r'$t/\Omega_{ci}$')
+
+    ax.plot(t, therm_i, label=r'$U_i$')
+    ax.plot(t, therm_e, label=r'$U_e$')
+    filesave = os.path.join(sys.argv[1],'nrj_therm.png')
+
+    fig.savefig(filesave)
+
+
+
+
+
+
+
+if __name__ == '__main__':
+    main()
+

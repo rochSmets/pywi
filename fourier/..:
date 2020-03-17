@@ -1,0 +1,84 @@
+
+import numpy as np
+import fftw3
+
+
+class Fourier() :
+
+    """
+    """
+
+    def __init__(self,
+                  data,
+                  field,
+                  domain) :
+
+        """
+
+        """
+
+        rank = data.ndim
+        dim = data.shape
+
+        if data.dtype.name == 'float16' or data.dtype.name == 'float32' or data.dtype.name == 'float64' :
+            dtyp = 'float'
+            indat.real = data
+            indat.imag = np.zeros(dim, dtype = float)
+            outdat = np.empty(dim, dtype = float)
+        elif data.dtype.name == 'complex64' or data.dtype.name == 'complex128' :
+            dtyp = 'complex'
+            indat = data
+            outdat = np.empty(dim, dtype = complex)
+        else :
+            raise NotImplementedError("the data type should be double or complex")
+
+        fft = fftw3.Plan(indat, outdat, direction = 'forward', flags = ['estimate'])
+        fft.execute()
+        fftw3.destroy_plan(fft)
+
+        self.zdata = self._shape(outdat, field = field, domain = domain)
+
+        self.xdata = np.linspace(0, 2*np.pi, self.zdata.shape[0])
+        self.ydata = np.linspace(0, 2*np.pi, self.zdata.shape[1])
+
+
+    def _shape(self,
+               data,
+               field,
+               domain) :
+
+        """
+
+        """
+
+        if field == 're' :
+            out = data.real
+        elif field == 'im' :
+            out = data.imag
+        elif field == 'mod' :
+            out = np.absolute(data)
+        elif field == 'arg' :
+            out = np.angle(data)
+        else :
+            raise NotImplementedError("field has to be 're', 'im', 'mod' or 'arg'")
+
+        i0 = out.shape[0]/2
+        i1 = out.shape[1]/2
+
+        if domain == 'upright' :
+            new = out[i0:,i1:]
+        elif domain == 'right' :
+            new = out[i0:,:]
+        elif domain == 'up' :
+            new = out[:,i1:]
+        elif domain == 'full' :
+            new = out[:,:]
+        else :
+            raise ValueError( "domain has to be 'upright', 'right', 'up' or 'full'" )
+
+        return new
+
+
+
+
+

@@ -1,0 +1,168 @@
+#!/Users/nicolasaunai/anaconda/bin/python
+# encoding: utf-8
+
+
+
+import picgsfc as pr
+import colorp as cp
+import numpy as np
+import sys
+import math
+
+
+
+
+def movie(run, tstart, tend, qty='jz', vmin=None, vmax=None, extent=None):
+
+    files = run.GetFieldFiles(tstart,tend)
+    nt    = len(files)
+
+    nx,nz = run.ncells
+
+    Flux = np.zeros((nx+1, nz+1),dtype=np.float32, order='F')
+    Qty  = np.zeros((nx+1, nz+1),dtype=np.float32, order='F')
+
+    x = run.GetCoord()
+    z = run.GetCoord(axis=1)
+
+    i0 = int(math.floor(tstart/run.GetTimeStep('fields')))
+
+
+    for i,f in enumerate(files):
+
+        time        = run.GetFileTime(f)
+        Flux[:,:]   = run.GetFlux(time)
+
+        if qty.lower() == 'bx':
+
+            B   = run.GetB(time)
+            Qty[:,:] = B[0,:,:]
+
+        elif qty.lower() == 'by':
+
+            B   = run.GetB(time)
+            Qty[:,:] = B[1,:,:]
+
+        elif qty.lower() == 'bz':
+
+            B   = run.GetB(time)
+            Qty[:,:] = B[2,:,:]
+
+        elif qty.lower() == 'ex':
+
+            E   = run.GetE(time)
+            Qty[:,:] = E[0,:,:]
+
+        elif qty.lower() == 'ey':
+
+            E   = run.GetE(time)
+            Qty[:,:] = E[1,:,:]
+
+        elif qty.lower() == 'ez':
+
+            E   = run.GetE(time)
+            Qty[:,:] = E[2,:,:]
+
+        elif qty.lower() == 'ni':
+
+            Ni   = run.GetNi(time)
+            Qty[:,:] = Ni[:,:]
+
+        elif qty.lower() == 'ne':
+
+            Ne   = run.GetNe(time)
+            Qty[:,:] = Ne[:,:]
+
+        elif qty.lower() == 'jx':
+
+            J   = run.GetJ(time)
+            Qty[:,:] = J[0,:,:]
+
+        elif qty.lower() == 'jy':
+
+            J   = run.GetJ(time)
+            Qty[:,:] = J[1,:,:]
+
+        elif qty.lower() == 'jz':
+
+            J   = run.GetJ(time)
+            Qty[:,:] = J[2,:,:]
+
+
+        c = cp.tofile(Qty[:,:],x, z,
+                  xlabel='x',
+                  ylabel='z',
+                  title=r'%s t = %5.2f' % (qty,time),
+                  vmin = vmin,vmax= vmax,
+                  extent=extent,
+                  fieldlines=Flux[:,:],
+                  fieldlinesnb = 25,
+                  filename='movie_%s_%04d' % (qty,i+i0),
+                  path = run.whereAmI()
+                  )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def main():
+    import picgsfc as pr
+
+
+    if len(sys.argv) < 7:
+        print ""
+        print """movie runpath tstart tend qty vmin vmax
+example : movie /Volumes/drobo/nico/asymmetric/095/data 0.1 0.5 bx vmin vmax x0 x1 y0 y1
+        """
+        return
+
+    print sys.argv[1]
+
+    r = pr.PICGSFCrun('p', sys.argv[1])
+
+    tstart = float(sys.argv[2])
+    tend   = float(sys.argv[3])
+    qty    = sys.argv[4]
+    vmin   = float(sys.argv[5])
+    vmax   = float(sys.argv[6])
+    extent = None
+
+    if (len(sys.argv) == 11):
+        x0     = float(sys.argv[7])
+        x1     = float(sys.argv[8])
+        y0     = float(sys.argv[9])
+        y1     = float(sys.argv[10])
+        extent = (x0,x1,y0,y1)
+
+#    Jt  = GetJt(r, tstart, tend)
+    #Vit  = GetVit(r)
+#    Ft   = GetFt(r,tstart, tend)
+
+
+#    movie(r,Jt, Ft, tstart, tend)
+
+    movie(r, tstart, tend, qty=qty, vmin=vmin, vmax=vmax,extent=extent)
+
+
+if __name__ == '__main__':
+    main()
+
+
+
+
+
