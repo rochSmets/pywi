@@ -48,7 +48,7 @@ def reconnectedFlux(path: str, time : list, xPointBox: list, axis : int) -> list
 
     """
 
-    run = heckle.Heckle('/run/media/smets/croq0Disk/blAckDog/02b/', 'Nb')
+    run = heckle.Heckle(path, 'Nb')
 
     # index of the box where to find X point
     ijBox = np.array(np.array(xPointBox)/run.dl, dtype=int)
@@ -59,39 +59,37 @@ def reconnectedFlux(path: str, time : list, xPointBox: list, axis : int) -> list
     times, groups = run.getTimeGroups(time)
     times.sort()
 
-    norm = lambda x, y : (y[0]-x[0])^2+(y[1]-x[1])^2
+    #norm = lambda x, y : (y[0]-x[0])^2+(y[1]-x[1])^2
 
     timeOut = []
-    ijXOut = []
+    ijXOut  = []
     fluxOut = []
-    EzOut = []
+    EzOut   = []
 
     for index, time in enumerate(times) :
         print('time : {0:6.2f} / {1:6.2f}'.format(time, times[-1]))
 
-        Az = run.fourierFlux(time)
+        Az = run.getA(time, 'z', 'fftw')
         az = Az[ijBox[0][0]:ijBox[0][1],ijBox[1][0]:ijBox[1][1]]
 
-        saddlePoints = saddles(az)
+        #saddlePoints = saddles(az)
 
-        minDist = np.inf
+        #minDist = np.inf
 
-        for i in range(len(saddlePoints)):
-            # print("X point # {0:1} : [{1:4} - {2:4}]".format(i, saddlePoints[i][0]+ijBox[0][0], saddlePoints[i][1]+ijBox[1][0]))
-            ijS = [saddlePoints[i][0]+ijBox[0][0], saddlePoints[i][1]+ijBox[1][0]]
-            ijS = ijG ##########################################################
-            dist = norm(ijG, ijS)
+        #for i in range(len(saddlePoints)):
+        #    ijS = [saddlePoints[i][0]+ijBox[0][0], saddlePoints[i][1]+ijBox[1][0]]
+        #    dist = norm(ijG, ijS)
 
-            # keep the best X point, ie closest to the guessed one
-            if dist < minDist:
-                ijX = ijS
-                minDist = dist
+        #    # keep the best X point, ie closest to the guessed one
+        #    if dist < minDist:
+        #        ijX = ijS
+        #        minDist = dist
 
-        AzLim = 0.5*(Az[ijX[0], 0]+Az[ijX[0], -1])
+        ijX = ijG
+
+        AzLim = 0.5*(Az[0, ijX[1]]+Az[-1, ijX[1]])
         flux = np.fabs(Az[ijX[0], ijX[1]]-AzLim)
-        Ez = run.GetE(time)[ijX[0], ijX[1] ,2]
-
-        # print(time, ijX, flux, Ez)
+        Ez = run.getE(time, 'z')[ijX[0], ijX[1]]
 
         timeOut.append(time)
         ijXOut.append(ijX)

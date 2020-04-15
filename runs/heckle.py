@@ -784,7 +784,7 @@ class Heckle(run.Run):
 
     #----------------------------------------------------------
     #----------------------------------------------------------
-    def GetMass(self, species):
+    def getMass(self, species):
 
         """
         Returns the mass of particles of a particular species
@@ -806,7 +806,7 @@ class Heckle(run.Run):
 
     #----------------------------------------------------------
     #----------------------------------------------------------
-    def GetCharge(self, species):
+    def getCharge(self, species):
 
         """
         Returns the electric charge of particles of a particular species
@@ -831,10 +831,10 @@ class Heckle(run.Run):
 
     #----------------------------------------------------------
     #----------------------------------------------------------
-    def GetHyperResistivity(self):
+    def getHyperResistivity(self):
 
         """
-        @todo: Brief Docstring for GetHyperResistivity
+        @todo: Brief Docstring for getHyperResistivity
         Longer description here
 
         @return: @todo
@@ -855,10 +855,10 @@ class Heckle(run.Run):
 
     #----------------------------------------------------------
     #----------------------------------------------------------
-    def GetResistivity(self):
+    def getResistivity(self):
 
         """
-        @todo: Brief Docstring for GetHyperResistivity
+        @todo: Brief Docstring for getHyperResistivity
         Longer description here
 
         @return: @todo
@@ -1014,8 +1014,8 @@ class Heckle(run.Run):
        fftBack = pyfftw.FFTW(AZ, az, axes=(0, 1), direction='FFTW_BACKWARD', flags=('FFTW_MEASURE', ))
 
        # fill the input arrays
-       bx.real[...] = self.GetB(time)[..., 0]
-       by.real[...] = self.GetB(time)[..., 1]
+       bx.real[...] = self.getB(time, 'x')
+       by.real[...] = self.getB(time, 'y')
        bx.imag = np.zeros(dim, dtype = float)
        by.imag = np.zeros(dim, dtype = float)
 
@@ -1084,8 +1084,6 @@ class Heckle(run.Run):
 
         xv, yv = np.meshgrid(x, y, indexing = 'ij')
 
-        #bx = self.GetB(time)[..., 0]+1j*np.zeros(yv.shape)
-        #by = self.GetB(time)[..., 1]+1j*np.zeros(xv.shape)
         bx = self.getB(time, 'x')+1j*np.zeros(yv.shape)
         by = self.getB(time, 'y')+1j*np.zeros(xv.shape)
 

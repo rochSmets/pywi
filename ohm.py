@@ -438,8 +438,8 @@ def hyper(run, time, comp, terms = 'all', smooth='no', sigma=1):
             elif comp.lower() == 'z' :
                 Jz = run.getJ(t, 'z')
                 if terms == 'all' :
-                    d2xJz = fields.deriv(Jz, dl, 2, 0)
-                    d2yJz = fields.deriv(Jz, dl, 2, 1)
+                    d2xJz = fields.deriv(Jz, run.dl, 2, 0)
+                    d2yJz = fields.deriv(Jz, run.dl, 2, 1)
                     term += d2xJz+d2yJz
                 elif terms == 'd2xJz' :
                     d2xJz = fields.deriv(Jz, dl, 2, 0)
