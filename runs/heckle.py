@@ -93,7 +93,7 @@ class Heckle(run.Run):
         Creation : 2015-02-27 19:12:14.062301
         """
 
-        f = h5py.File(os.path.join(self.path, self._fieldfilename))
+        f = h5py.File(os.path.join(self.path, self._fieldfilename), 'r')
         attribute = f.attrs[attributeName]
         f.close()
 
@@ -115,7 +115,7 @@ class Heckle(run.Run):
         return a list with the times, and a list with the associated groups
         """
 
-        f = h5py.File(os.path.join(self.path, self._fieldfilename))
+        f = h5py.File(os.path.join(self.path, self._fieldfilename), 'r')
 
         # build the list of all time recorded in fields.h5
         groups = f.keys()
@@ -159,7 +159,7 @@ class Heckle(run.Run):
 
         mytimes, mygroups = self.getTimeGroups([time])
 
-        f = h5py.File(os.path.join(self.path, self._fieldfilename))
+        f = h5py.File(os.path.join(self.path, self._fieldfilename), 'r')
 
         data = f[mygroups+'/'+fieldname][()] #data = f[mygroups+'/'+fieldname].value is deprecated
 
